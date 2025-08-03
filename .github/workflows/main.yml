@@ -9,17 +9,19 @@ jobs:
   send-digest:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      DATABUTTON_API_URL: ${{ secrets.DATABUTTON_API_URL }}
     steps:
       - name: Send Daily Digest
         run: |
-          echo "Calling: ${{ secrets.DATABUTTON_API_URL }}/generate-digest"
+          echo "Calling: ${DATABUTTON_API_URL}/generate-digest"
           response=$(curl -s -w "HTTP_CODE:%{http_code}" \
             -X POST \
             -H "Content-Type: application/json" \
             --max-time 1200 \
             --retry 2 \
             --retry-delay 60 \
-            ${{ secrets.DATABUTTON_API_URL }}/generate-digest
+            "${DATABUTTON_API_URL}/generate-digest")
           
           http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
           body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
