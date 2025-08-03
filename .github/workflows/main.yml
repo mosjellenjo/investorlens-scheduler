@@ -19,7 +19,7 @@ jobs:
             --max-time 1200 \
             --retry 2 \
             --retry-delay 60 \
-            "${{ secrets.DATABUTTON_API_URL }}/daily-digest/generate-digest")
+            "${{ secrets.DATABUTTON_API_URL }}/generate-digest"
           
           http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
           body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
