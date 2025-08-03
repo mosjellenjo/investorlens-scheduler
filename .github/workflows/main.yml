@@ -8,7 +8,7 @@ on:
 jobs:
   send-digest:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - name: Send Daily Digest
         run: |
@@ -16,9 +16,9 @@ jobs:
           response=$(curl -s -w "HTTP_CODE:%{http_code}" \
             -X POST \
             -H "Content-Type: application/json" \
-            --max-time 300 \
-            --retry 3 \
-            --retry-delay 30 \
+            --max-time 1200 \
+            --retry 2 \
+            --retry-delay 60 \
             "${{ secrets.DATABUTTON_API_URL }}/daily-digest/generate-digest")
           
           http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
