@@ -2,9 +2,8 @@ name: Daily Digest Scheduler
 
 on:
   schedule:
-    - cron: '0 8 * * *'  # 8 AM UTC (morning digest)
-    - cron: '0 20 * * *' # 8 PM UTC (evening digest)
-  workflow_dispatch: # Allows manual trigger
+    - cron: '0 6 * * 1-5'  # 8 AM CET (6 AM UTC) Monday-Friday
+  workflow_dispatch:  # Allow manual triggering
 
 jobs:
   send-digest:
@@ -12,7 +11,20 @@ jobs:
     steps:
       - name: Send Daily Digest
         run: |
-          curl -X POST "${{ secrets.DATABUTTON_API_URL }}/daily-digest/generate-digest" \
-            -H "Content-Type: application/json" \
-            -w "Status: %{http_code}\nResponse: %{response}" \
-            -s
+          echo "Calling: ${{ secrets.DATABUTTON_API_URL }}"
+          response=$(curl -s -w "\nHTTP_CODE:%{http_code}\n" \
+            -X POST "${{ secrets.DATABUTTON_API_URL }}" \
+            -H "Content-Type: application/json")
+          
+          echo "Response:"
+          echo "$response"
+          
+          # Extract HTTP code
+          http_code=$(echo "$response" | grep "HTTP_CODE:" | cut -d: -f2)
+          
+          if [ "$http_code" != "200" ]; then
+            echo "Error: HTTP $http_code"
+            exit 1
+          else
+            echo "Success: Daily digest sent!"
+          fi
