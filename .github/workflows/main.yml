@@ -2,7 +2,7 @@ name: Daily Digest Scheduler
 
 on:
   schedule:
-    - cron: "0 8 * * 1-5"
+    - cron: "0 8 * * 1-5"  # 8 AM Monday to Friday
   workflow_dispatch:
 
 jobs:
@@ -14,24 +14,30 @@ jobs:
     steps:
       - name: Send Daily Digest
         run: |
-          echo "Calling: ${DATABUTTON_API_URL}/generate-digest"
-          response=$(curl -s -w "HTTP_CODE:%{http_code}" \
-            -X POST \
-            -H "Content-Type: application/json" \
-            --max-time 1200 \
-            --retry 2 \
-            --retry-delay 60 \
-            "${DATABUTTON_API_URL}/generate-digest")
-          
-          http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
-          body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
-          
-          echo "Response: $body"
-          echo "HTTP Code: $http_code"
-          
-          if [ "$http_code" -ne 200 ]; then
-            echo "Error: HTTP $http_code"
-            exit 1
-          else
-            echo "Success: Daily digest sent!"
-          fi
+          retries=3
+          for i in $(seq 1 $retries); do
+            echo "Attempt $i: Calling ${DATABUTTON_API_URL}/daily-digest/generate-digest"
+            
+            response=$(curl -s -w "HTTP_CODE:%{http_code}" \
+              -X POST \
+              -H "Content-Type: application/json" \
+              --max-time 1200 \
+              "${DATABUTTON_API_URL}/daily-digest/generate-digest")
+            
+            http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+            body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+            
+            echo "Response: $body"
+            echo "HTTP Code: $http_code"
+            
+            if [ "$http_code" -eq 200 ]; then
+              echo "Success: Daily digest sent!"
+              break
+            elif [ "$i" -eq "$retries" ]; then
+              echo "Failed after $retries attempts. HTTP $http_code"
+              exit 1
+            else
+              echo "Attempt $i failed (HTTP $http_code). Retrying in 30s..."
+              sleep 30
+            fi
+          done
