@@ -22,7 +22,7 @@ jobs:
               -X POST \
               -H "Content-Type: application/json" \
               --max-time 1200 \
-              "${DATABUTTON_API_URL}/daily-digest/generate-digest-test")
+              "${DATABUTTON_API_URL}/daily-digest/generate-digest")
             
             http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
             body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
