@@ -16,13 +16,13 @@ jobs:
         run: |
           retries=3
           for i in $(seq 1 $retries); do
-            echo "Attempt $i: Calling ${DATABUTTON_API_URL}/daily-digest/generate-digest"
+            echo "Attempt $i: Calling ${DATABUTTON_API_URL}/daily-digest/generate-digest-test"
             
             response=$(curl -s -w "HTTP_CODE:%{http_code}" \
               -X POST \
               -H "Content-Type: application/json" \
               --max-time 1200 \
-              "${DATABUTTON_API_URL}/daily-digest/generate-digest")
+              "${DATABUTTON_API_URL}/daily-digest/generate-digest-test")
             
             http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
             body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
